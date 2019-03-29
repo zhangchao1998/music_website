@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>音乐搜索</title>
+	<link rel="stylesheet" href="{% static 'one/css/style.css' %}">
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.3.1/css/solid.css'>
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.3.1/css/fontawesome.css'>
+	<style>
+		.info {
+			font-family: "Microsoft Yahei";
+			text-align: center;
+		}
+		.info h1 {
+			font-weight: 400;
+		}
+		.li{
+			display: inline-block;width: 30%;float: left; text-align: center;height: 30px;
+		}
+        .li1{
+			display: inline-block;width: 40%;float: left; text-align: center;height: 30px;overflow: hidden;
+		}
+        .bt{
+            display: inline-block;
+						height: 30px;
+						width: 20%;
+						background-color: rgba(0,0,0,0);
+						border: none;
+						color: white;
+                        cursor: pointer;
+        }
+	</style>
+</head>
+<body>
+<div style="width: 100%; height: 10px;position: absolute;color: white">
+	<span style="float: left;margin-left: 20px">当前用户：{{ data.user }}</span>
+	<span style="float: right;margin-right: 20px"><a href="/music/logout/" style="color: white">注销</a></span>
+</div>
+<div style="width: 100%; margin: 60px auto;position: absolute">
+	<div>
+		<div style="width: 50%;margin: 0 auto">
+			<div style="width: 50%; margin: 0 auto; position: relative">
+			  	<input id="s_name" type="text" placeholder="请输入要搜索的歌曲名"
+					 style="background-color: rgba(255,255,255,0.3);
+					 border: none;
+					 height: 30px;
+					 width: 80%;
+					 display: inline-block;
+					 position: absolute;
+					 left: 0;top: 0;box-sizing: border-box;color: white">
+			  	<button id="find" style="display: inline-block;
+						height: 30px;
+						width: 20%;
+						background-color: rgba(0,0,0,0.3);
+						border: none;
+						color: white;
+						float: left;
+						position: absolute;
+						right: 0;top: 0;">搜索</button>
+                <select name="from" id="from"
+                        style="position: absolute;
+                        right: -80px; top:0;
+                        background-color: rgba(0,0,0,0.3);
+                        color: white;
+                        height: 30px;border: none">
+                    <option value="migu">咪咕音乐</option>
+                    <option value="kugou">酷狗音乐</option>
+                    <option value="qianqian">百度音乐</option>
+                </select>
+			</div>
+		</div>
+	</div>
+	<div style="margin: 100px auto; width: 80%;height: 100px">
+		<ul style="list-style: none; width: 100%; color: white">
+			<li style="width: 100%;">
+				<span class="li1">歌曲</span>
+				<span class="li">歌手</span>
+				<span class="li">播放-下载</span>
+			</li>
+		</ul>
+        <ul id="data" style="list-style: none; width: 100%; color: white; padding-top: 50px"></ul>
+	</div>
+</div>
+<div style="width:400px;margin:0 auto; padding:20px 0;position: absolute;bottom: 60px;right: 0;">
+    <span style="color: white">声明：本网站仅为个人学习之用，无任何商业用途！</span>
+</div>
+<div id="bofang" style="position: absolute;bottom: 0;left: 0"></div>
+<script src="{% static 'one/js/three.min.js' %}"></script>
+<script src="{% static 'one/js/jquery.min.js' %}"></script>
+<script src="{% static 'one/js/index.js' %}"></script>
+<script>
+    $(function () {
+        var n = 0;
+        $('#find').click(function () {
+        if (n===0){
+            alert('已开始搜索，所需时间与网络状况有关，请耐心等待，搜索失败会有弹窗提醒，如果搜索失败请尝试换源。');
+            n += 1
+        }
+        var s_from = $('#from').val();
+        var s_name = $('#s_name').val();
+        var data_ul = window.document.getElementById('data');
+        $.ajax({
+            type:'get',
+            url:'/pc/?s_name='+s_name+"&s_from="+s_from,
+            data:"",
+            success:function (data) {
+                var result = data['result'];
+                if(result){
+                    var str="";
+                    for ( i in result){
+                        str += '<li style="width: 100%;">'+
+                                '<span class="li1">'+ result[i]['music'] + '</span>'+
+                                '<span class="li">'+ result[i]['singer'] + '</span>'+
+                                '<span class="li" music="'+ result[i]['one_link'] +'" id="music_link'+ i +'" style="cursor:pointer;" name="music_link">'+ '点击播放' + '</span>'+
+                                '</li>';
+                    }
+                    data_ul.innerHTML = str;
+                }
+                var a_list = window.document.getElementsByName('music_link');
+                for (a in a_list){
+                    var ids = 'music_link'+ a;
+                    $('#'+ids).click(function () {
+                        var bofang = window.document.getElementById('bofang');
+                        var a_link = this.getAttribute('music');
+                        var str1 = '';
+                        str1 += '<audio controls autoplay="autoplay">' +
+                            '<source src="' + a_link + '">' +
+                            '您的浏览器不支持 audio 元素。' +
+                            '</audio>';
+                        bofang.innerHTML = str1
+                    })
+                }
+            },
+            error:function () {
+              alert("查询失败，请尝试换源！")
+            }
+        })
+    });
+    });
+</script>
+</body>
+</html>
